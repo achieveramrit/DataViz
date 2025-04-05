@@ -1,57 +1,64 @@
-const { analyzeData } = require('../services/analysisService');
-const { generateChart } = require('../services/chartService');
-
-// In-memory storage (no DB)
-const sessions = {};
+const { analyzeData, filterData, generateChart } = require('../services/analysisService');
 
 exports.analyzeData = async (req, res) => {
   try {
-    const file = req.file;
-    if (!file) return res.status(400).json({ error: 'No file uploaded' });
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'No file uploaded',
+        suggestion: 'Please upload a CSV or JSON file'
+      });
+    }
 
-    const { data, columns } = await analyzeData(file.buffer, file.mimetype);
-    const sessionId = Date.now().toString();
-
-    // Generate a chart (example: bar chart)
-    const numericCol = columns.find(col => col.type === 'number')?.name;
-    const categoryCol = columns.find(col => col.type === 'category')?.name;
-    const chartImage = await generateChart(
-      data.map(row => row[categoryCol || columns[0].name]),
-      numericCol || columns[1].name,
-      data.map(row => row[numericCol || columns[1].name])
-    );
-
-    // Store in memory
-    sessions[sessionId] = { data, columns };
-
+    const analysis = await analyzeData(req.file.buffer, req.file.mimetype);
+    
     res.json({
-      sessionId,
-      dataPreview: data.slice(0, 50), // First 50 rows
-      columns,
-      chartImage: chartImage.toString('base64'),
+      success: true,
+      dataPreview: analysis.rawData.slice(0, 10),
+      metadata: analysis.metadata,
+      chartImage: analysis.chartImage
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ 
+      success: false,
+      error: err.message,
+      suggestion: 'Please check your file format and try again'
+    });
   }
 };
 
-exports.filterData = (req, res) => {
-  const { sessionId, filters } = req.body;
-  const session = sessions[sessionId];
-  if (!session) return res.status(404).json({ error: 'Session expired' });
+exports.filterData = async (req, res) => {
+  try {
+    const { datasetId, filters } = req.body;
+    
+    if (!datasetId || !filters) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
 
-  // Apply filters
-  const filteredData = session.data.filter(row => {
-    return Object.entries(filters).every(([key, condition]) => {
-      if (condition.type === 'range') {
-        return row[key] >= condition.min && row[key] <= condition.max;
-      }
-      if (condition.type === 'category') {
-        return condition.values.includes(row[key]);
-      }
-      return true;
+    const filteredData = await filterData(datasetId, filters);
+    res.json({ success: true, filteredData });
+  } catch (err) {
+    res.status(500).json({ 
+      success: false,
+      error: err.message 
     });
-  });
+  }
+};
 
-  res.json({ filteredData });
+exports.generateChart = async (req, res) => {
+  try {
+    const { datasetId, chartType, customization } = req.body;
+    
+    const chartImage = await generateChart(datasetId, chartType, customization);
+    res.json({ success: true, chartImage });
+  } catch (err) {
+    res.status(500).json({ 
+      success: false,
+      error: err.message,
+      suggestion: 'Please check your chart configuration'
+    });
+  }
 };
