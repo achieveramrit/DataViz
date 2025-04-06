@@ -25,14 +25,24 @@
    git clone https://github.com/achieveramrit/DataViz.git
 
 🔧 How It Works
+
 File Processing
+
 Client-side parsing using Papa Parse (CSV) and JSON.parse
+
 Extracts column types and sample data
+
 Chart Selection
+
 Rule-based chart recommendation:
+
 1-2 numeric columns → Bar/Line chart
+
 2+ numeric columns → Scatter plot
+
 Categorical data → Pie chart
+
 Filtering
+
 Client-side filtering with JavaScript array methods
 
