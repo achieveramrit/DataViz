@@ -1,7 +1,32 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
+import { Chart as ChartJS, registerables } from 'chart.js';
+import { Bar, Line, Pie } from 'react-chartjs-2';
 
-const ChartDisplay = ({ chartImage, suggestions, metadata, onChartTypeChange, activeChartType }) => {
+// Register ChartJS components
+ChartJS.register(...registerables);
+
+const ChartDisplay = ({ chartData, suggestions, metadata, onChartTypeChange, activeChartType }) => {
+  const getChartComponent = () => {
+    if (!chartData) return null;
+
+    const commonOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+    };
+
+    switch(activeChartType) {
+      case 'bar':
+        return <Bar data={chartData} options={commonOptions} />;
+      case 'line':
+        return <Line data={chartData} options={commonOptions} />;
+      case 'pie':
+        return <Pie data={chartData} options={commonOptions} />;
+      default:
+        return <Bar data={chartData} options={commonOptions} />;
+    }
+  };
+
   return (
     <motion.div 
       className="chart-display"
@@ -23,25 +48,17 @@ const ChartDisplay = ({ chartImage, suggestions, metadata, onChartTypeChange, ac
         </div>
       )}
 
-      <div className="chart-image-container">
-        {chartImage ? (
-          <motion.img
-            src={chartImage}
-            alt="Generated chart"
-            className="chart-image"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          />
+      <div className="chart-container" style={{ height: '400px', width: '100%' }}>
+        {chartData ? (
+          getChartComponent()
         ) : (
-          <div className="chart-placeholder">
-            <motion.div
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              Select data to visualize
-            </motion.div>
-          </div>
+          <motion.div
+            className="chart-placeholder"
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            Select data to visualize
+          </motion.div>
         )}
       </div>
 

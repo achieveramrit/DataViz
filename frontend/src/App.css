@@ -128,7 +128,47 @@ body {
   background-color: rgba(253, 121, 168, 0.1);
   transform: translateY(-3px);
 }
+.chart-display {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
 
+.chart-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.chart-tab {
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.chart-tab.active {
+  background: #4361ee;
+  color: white;
+}
+
+.chart-placeholder {
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 1.2rem;
+}
+
+.chart-metadata {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
 /* Animated Chart Container */
 .chart-container {
   position: relative;
